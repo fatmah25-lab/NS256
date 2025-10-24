@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌿 نظام نَسمة — لوحة السحابة</title>
+  <style>
+    body { font-family:"Cairo",sans-serif; background:linear-gradient(to right,#d4fc79,#96e6a1);
+           text-align:center; padding:30px; color:#222; }
+    h1 { color:#2b4a2f; font-size:2.2rem; }
+    .sensor-box { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+                  gap:15px; margin-top:20px; }
+    .card { background:#fff; padding:20px; border-radius:16px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.1); transition:transform .3s; }
+    .card:hover { transform:scale(1.05); }
+    .value { font-size:1.8rem; color:#00796b; margin-top:5px; }
+    .aroma { margin-top:40px; font-size:3rem; color:#5d4037; }
+    .status { margin-top:10px; font-size:1.3rem; font-weight:bold; }
+    footer { margin-top:40px; font-size:.9rem; color:#555; }
+  </style>
+</head>
+<body>
+
+  <h1>🌿 نظام نَسمة — القيم المباشرة عبر Blynk Cloud</h1>
+
+  <div class="sensor-box">
+    <div class="card"><h3>درجة الحرارة 🌡️</h3><div class="value" id="temp">--</div></div>
+    <div class="card"><h3>الرطوبة 💧</h3><div class="value" id="hum">--</div></div>
+    <div class="card"><h3>الغاز 🌬️</h3><div class="value" id="air">--</div></div>
+    <div class="card"><h3>الصوت 🔊</h3><div class="value" id="sound">--</div></div>
+  </div>
+
+  <div class="aroma" id="aromaIcon">🌸</div>
+  <div class="status" id="aromaText">رائحة المسك</div>
+  <footer>☁️ يتم التحديث كل ثانية من Blynk Cloud</footer>
+
+  <script>
+    // ضع هنا رمز المصادقة الخاص بك من Blynk
+    const BLYNK_TOKEN = "-ai-diLYLYrrN9S3jeuDyLD9LKdc_sDZ";
+
+    async function updateSensors() {
+      try {
+        const res = await fetch(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&V1&V2&V3&V4`);
+        if (!res.ok) throw new Error("Network error");
+        const data = await res.json();
+
+        const temp = parseFloat(data.V1);
+        const hum = parseFloat(data.V2);
+        const air = parseInt(data.V3);
+        const sound = parseInt(data.V4);
+
+        document.getElementById("temp").textContent = temp.toFixed(1) + " °C";
+        document.getElementById("hum").textContent = hum.toFixed(1) + " %";
+        document.getElementById("air").textContent = air;
+        document.getElementById("sound").textContent = sound;
+
+        const aromaIcon = document.getElementById("aromaIcon");
+        const aromaText = document.getElementById("aromaText");
+        if (sound >= 690) { aromaIcon.textContent = "☕"; aromaText.textContent = "رائحة القهوة"; }
+        else if (sound >= 680) { aromaIcon.textContent = "🪵"; aromaText.textContent = "رائحة العود"; }
+        else { aromaIcon.textContent = "🌸"; aromaText.textContent = "رائحة المسك"; }
+
+      } catch (err) {
+        console.error("❌ فشل الاتصال بالسحابة:", err);
+      }
+    }
+
+    setInterval(updateSensors, 1000);
+    updateSensors();
+  </script>
+</body>
+</html>
